@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
   kernelStatistics(kd, &ld, &cd, cd.MaxIterations);
 
 #ifdef VERIFICATION
-  PdfT errorNorm = -1.0;
+  PdfType errorNorm = -1.0;
   kernelVerify(&ld, kd, &cd, &errorNorm);
 #endif
 
