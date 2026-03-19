@@ -7,49 +7,49 @@
 
 #include <stdlib.h>
 
-typedef double PdfT;
+typedef double PdfType;
 
-#define F(number) (PdfT)(number)
+#define F(number) (PdfType)(number)
 
 #define N_D3Q19 19
 
-#define D3Q19_N  0
-#define D3Q19_S  1
-#define D3Q19_E  2
-#define D3Q19_W  3
+#define D3Q19_N 0
+#define D3Q19_S 1
+#define D3Q19_E 2
+#define D3Q19_W 3
 #define D3Q19_NE 4
 #define D3Q19_SE 5
 #define D3Q19_NW 6
 #define D3Q19_SW 7
-#define D3Q19_T  8
+#define D3Q19_T 8
 #define D3Q19_TN 9
 #define D3Q19_TE 10
 #define D3Q19_TW 11
 #define D3Q19_TS 12
-#define D3Q19_B  13
+#define D3Q19_B 13
 #define D3Q19_BS 14
 #define D3Q19_BN 15
 #define D3Q19_BW 16
 #define D3Q19_BE 17
-#define D3Q19_C  18
+#define D3Q19_C 18
 
-extern int D3Q19_X[N_D3Q19];
-extern int D3Q19_Y[N_D3Q19];
-extern int D3Q19_Z[N_D3Q19];
-extern int D3Q19_INV[N_D3Q19];
+extern int D3Q19X[N_D3Q19];
+extern int D3Q19Y[N_D3Q19];
+extern int D3Q19Z[N_D3Q19];
+extern int D3Q19Inv[N_D3Q19];
 
-typedef int LatticeT;
+typedef int LatticeType;
 
 enum {
   LAT_CELL_OBSTACLE = 0,
-  LAT_CELL_FLUID = 1,
-  LAT_CELL_INLET = 2,
-  LAT_CELL_OUTLET = 4
+  LAT_CELL_FLUID    = 1,
+  LAT_CELL_INLET    = 2,
+  LAT_CELL_OUTLET   = 4
 };
 
 typedef struct LatticeDesc {
   int Dims[3];
-  LatticeT *Lattice;
+  LatticeType *Lattice;
   int nCells;
   int nFluid;
   int nObst;
@@ -59,20 +59,20 @@ typedef struct LatticeDesc {
   int PeriodicY;
   int PeriodicZ;
   const char *Name;
-} LatticeDesc;
+} LatticeDescType;
 
 typedef struct CaseData {
-  PdfT Omega;
-  PdfT RhoIn;
-  PdfT RhoOut;
-  PdfT XForce;
+  PdfType Omega;
+  PdfType RhoIn;
+  PdfType RhoOut;
+  PdfType XForce;
   int MaxIterations;
   int StatisticsModulus;
-} CaseData;
+} CaseDataType;
 
 typedef struct KernelData {
-  PdfT *Pdfs[2];
-  PdfT *PdfsActive;
+  PdfType *Pdfs[2];
+  PdfType *PdfsActive;
   int Dims[3];
   int GlobalDims[3];
   int Offsets[3];
@@ -83,36 +83,37 @@ typedef struct KernelData {
   int Iteration;
   double LoopBalance;
   double Duration;
-  void (*GetNode)(struct KernelData *kd, int x, int y, int z, PdfT *pdfs);
-  void (*SetNode)(struct KernelData *kd, int x, int y, int z, PdfT *pdfs);
-  void (*BoundaryConditionsGetPdf)(struct KernelData *kd, int x, int y, int z,
-                                   int dir, PdfT *pdf);
-  void (*BoundaryConditionsSetPdf)(struct KernelData *kd, int x, int y, int z,
-                                   int dir, PdfT pdf);
-  void (*Kernel)(LatticeDesc *ld, struct KernelData *kd, CaseData *cd);
-} KernelData;
+  void (*GetNode)(struct KernelData *kd, int x, int y, int z, PdfType *pdfs);
+  void (*SetNode)(struct KernelData *kd, int x, int y, int z, PdfType *pdfs);
+  void (*BoundaryConditionsGetPdf)(
+      struct KernelData *kd, int x, int y, int z, int dir, PdfType *pdf);
+  void (*BoundaryConditionsSetPdf)(
+      struct KernelData *kd, int x, int y, int z, int dir, PdfType pdf);
+  void (*Kernel)(LatticeDescType *ld, struct KernelData *kd, CaseDataType *cd);
+} KernelDataType;
 
 typedef struct KernelFunctions {
   const char *Name;
-  void (*Init)(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-  void (*Deinit)(LatticeDesc *ld, KernelData **kd);
-} KernelFunctions;
+  void (*Init)(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+  void (*Deinit)(LatticeDescType *ld, KernelDataType **kd);
+} KernelFunctionsType;
 
-extern KernelFunctions g_kernels[];
-extern const int g_nKernels;
+extern KernelFunctionsType GKernels[];
+extern const int G_N_KERNELS;
 
-static inline int latticeIndex(int dims[3], int x, int y, int z) {
+static inline int latticeIndex(int dims[3], int x, int y, int z)
+{
   return z * dims[0] * dims[1] + y * dims[0] + x;
 }
 
-static inline int indexSoA(int gDims[3], int x, int y, int z, int d) {
-  return d * gDims[0] * gDims[1] * gDims[2] + x * gDims[1] * gDims[2] +
-         y * gDims[2] + z;
+static inline int indexSoA(int gDims[3], int x, int y, int z, int d)
+{
+  return d * gDims[0] * gDims[1] * gDims[2] + x * gDims[1] * gDims[2] + y * gDims[2] + z;
 }
 
-static inline int indexAoS(int gDims[3], int x, int y, int z, int d) {
-  return x * gDims[1] * gDims[2] * N_D3Q19 + y * gDims[2] * N_D3Q19 +
-         z * N_D3Q19 + d;
+static inline int indexAoS(int gDims[3], int x, int y, int z, int d)
+{
+  return x * gDims[1] * gDims[2] * N_D3Q19 + y * gDims[2] * N_D3Q19 + z * N_D3Q19 + d;
 }
 
 #ifndef MIN
@@ -122,38 +123,37 @@ static inline int indexAoS(int gDims[3], int x, int y, int z, int d) {
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
-void geometryCreate(const char *type, int dims[3], int periodic[3],
-                    LatticeDesc *ld);
-void kernelInit(LatticeDesc *ld, KernelData **kd, int propModel,
-                int dataLayout);
-void kernelDeinit(LatticeDesc *ld, KernelData **kd);
-void kernelSetInitialDensity(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelSetInitialVelocity(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelComputeBoundaryConditions(KernelData *kd, LatticeDesc *ld,
-                                     CaseData *cd);
-void kernelAddBodyForce(KernelData *kd, LatticeDesc *ld, CaseData *cd);
-PdfT kernelDensity(KernelData *kd, LatticeDesc *ld);
-void kernelStatistics(KernelData *kd, LatticeDesc *ld, CaseData *cd, int iter);
-void kernelVerify(LatticeDesc *ld, KernelData *kd, CaseData *cd,
-                  PdfT *errorNorm);
+void geometryCreate(const char *type, int dims[3], int periodic[3], LatticeDescType *ld);
+void kernelInit(LatticeDescType *ld, KernelDataType **kd, int propModel, int dataLayout);
+void kernelDeinit(LatticeDescType *ld, KernelDataType **kd);
+void kernelSetInitialDensity(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelSetInitialVelocity(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelComputeBoundaryConditions(
+    KernelDataType *kd, LatticeDescType *ld, CaseDataType *cd);
+void kernelAddBodyForce(KernelDataType *kd, LatticeDescType *ld, CaseDataType *cd);
+PdfType kernelDensity(KernelDataType *kd, LatticeDescType *ld);
+void kernelStatistics(
+    KernelDataType *kd, LatticeDescType *ld, CaseDataType *cd, int iter);
+void kernelVerify(
+    LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd, PdfType *errorNorm);
 
 enum { PROP_PUSH = 0, PROP_PULL = 1, PROP_AA = 2 };
 enum { LAYOUT_SOA = 0, LAYOUT_AOS = 1 };
 
-void kernelInitPushSoA(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-void kernelInitPushAoS(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-void kernelInitPullSoA(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-void kernelInitPullAoS(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-void kernelInitBlkPushSoA(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-void kernelInitBlkPullSoA(LatticeDesc *ld, KernelData **kd, CaseData *cd);
-void kernelInitAaSoA(LatticeDesc *ld, KernelData **kd, CaseData *cd);
+void kernelInitPushSoA(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+void kernelInitPushAoS(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+void kernelInitPullSoA(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+void kernelInitPullAoS(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+void kernelInitBlkPushSoA(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+void kernelInitBlkPullSoA(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
+void kernelInitAaSoA(LatticeDescType *ld, KernelDataType **kd, CaseDataType *cd);
 
-void kernelPushSoA(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelPushAoS(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelPullSoA(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelPullAoS(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelBlkPushSoA(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelBlkPullSoA(LatticeDesc *ld, KernelData *kd, CaseData *cd);
-void kernelAaSoA(LatticeDesc *ld, KernelData *kd, CaseData *cd);
+void kernelPushSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelPushAoS(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelPullSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelPullAoS(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelBlkPushSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelBlkPullSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
+void kernelAaSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd);
 
 #endif
