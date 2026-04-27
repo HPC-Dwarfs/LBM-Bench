@@ -7,7 +7,11 @@
 
 #include <stdlib.h>
 
+#ifdef PRECISION_SP
+typedef float PdfType;
+#else
 typedef double PdfType;
+#endif
 
 #define F(number) (PdfType)(number)
 

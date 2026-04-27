@@ -1,5 +1,7 @@
 # Supported: GCC, CLANG, ICX
 TOOLCHAIN ?= CLANG
+# Supported: dp (double), sp (single)
+PRECISION ?= dp
 ENABLE_OPENMP ?= false
 ENABLE_LIKWID ?= false
 

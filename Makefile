@@ -4,8 +4,8 @@
 # license that can be found in the LICENSE file.
 
 #CONFIGURE BUILD SYSTEM
-TARGET	   = lbmbench-$(TOOLCHAIN)
-BUILD_DIR  = ./build/$(TOOLCHAIN)
+TARGET	   = lbmbench-$(TOOLCHAIN)-$(PRECISION)
+BUILD_DIR  = ./build/$(TOOLCHAIN)-$(PRECISION)
 SRC_DIR    = ./src
 MAKE_DIR   = ./mk
 Q         ?= @
@@ -26,6 +26,13 @@ include config.mk
 include $(MAKE_DIR)/include_$(TOOLCHAIN).mk
 include $(MAKE_DIR)/include_LIKWID.mk
 INCLUDES  += -I$(SRC_DIR)/includes -I$(BUILD_DIR)
+
+PRECISION ?= dp
+ifeq ($(PRECISION),sp)
+  OPTIONS += -DPRECISION_SP
+else ifneq ($(PRECISION),dp)
+  $(error PRECISION must be 'dp' or 'sp', got '$(PRECISION)')
+endif
 
 VPATH     = $(SRC_DIR)
 ASM       = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.s,$(wildcard $(SRC_DIR)/*.c))
@@ -54,11 +61,15 @@ $(BUILD_DIR)/%.s:  %.c
 	$(info ===>  GENERATE ASM  $@)
 	$(CC) -S $(CPPFLAGS) $(CFLAGS) $< -o $@
 
-.PHONY: clean distclean info asm format
+.PHONY: clean distclean info asm format test
 
 clean:
 	$(info ===>  CLEAN)
 	@rm -rf $(BUILD_DIR)
+
+test:
+	$(info ===>  TEST  TOOLCHAIN=$(TOOLCHAIN))
+	@bash $(SRC_DIR)/test.sh $(TOOLCHAIN)
 
 distclean:
 	$(info ===>  DIST CLEAN)
