@@ -57,3 +57,4 @@ dkms.conf
 /lbmbench-*
 /compile_commands.json
 /.cache/clangd/index
+.clangd

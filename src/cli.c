@@ -12,7 +12,7 @@
 
 static int parseDimensions(const char *param, int *nX, int *nY, int *nZ)
 {
-  char *tmp;
+  const char *tmp;
   *nX = atoi(param);
   if (*nX <= 0) {
     printf("ERROR: X dimension must be > 0.\n");
