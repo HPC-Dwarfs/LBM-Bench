@@ -2,6 +2,7 @@
  * All rights reserved. This file is part of LBM-Bench.
  * Use of this source code is governed by a MIT style
  * license that can be found in the LICENSE file. */
+#include <stdio.h>
 #include "lbm.h"
 #include "timing.h"
 
@@ -39,6 +40,13 @@ void kernelPullSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd)
 
 #define I(x, y, z, dir) indexSoA(gDims, (x), (y), (z), (dir))
 
+#ifdef _OPENMP
+#pragma omp parallel 
+{
+  printf("Entering Pull SOA sweep %d\n",_OPENMP);
+}
+#endif
+ 
   kd->Duration = -getTimeStamp();
 
   for (int iter = 0; iter < maxIterations; ++iter) {

@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
   double duration    = kd->Duration;
   double loopBalance = kd->LoopBalance;
   double dataVolGByte =
-      loopBalance * ld.nFluid * cd.MaxIterations / 1024.0 / 1024.0 / 1024.0;
+      loopBalance * ld.nFluid * cd.MaxIterations / 1000000000.;
   double bandwidthGBytePerS = dataVolGByte / duration;
   double perf = (double)ld.nFluid * (double)cd.MaxIterations / duration / 1.0e6;
 
