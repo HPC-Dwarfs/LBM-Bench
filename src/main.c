@@ -119,7 +119,19 @@ int main(int argc, char *argv[])
   printf("# starting kernel...\n");
 
   // Run kernel
-  PROFILE(kd->Kernel(&ld, kd, &cd))
+#ifdef LIKWID_PERFMON
+  _Pragma("omp parallel")
+  {
+    LIKWID_MARKER_START("PROPKERNEL");
+  }
+  kd->Kernel(&ld, kd, &cd);
+  _Pragma("omp parallel")
+  {
+    LIKWID_MARKER_STOP("PROPKERNEL");
+  }
+#else /* LIKWID_PERFMON */
+  kd->Kernel(&ld, kd, &cd);
+#endif /* LIKWID_PERFMON */
 
   // Statistics
   kernelStatistics(kd, &ld, &cd, cd.MaxIterations);
