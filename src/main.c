@@ -13,7 +13,23 @@
 
 #include "cli.h"
 #include "lbm.h"
+#include "likwid-marker.h"
 #include "timing.h"
+
+#ifdef LIKWID_PERFMON
+#define PROFILE(call)                                                                    \
+  _Pragma("omp parallel")                                                                \
+  {                                                                                      \
+    LIKWID_MARKER_START("PROPKERNEL");                                                   \
+  }                                                                                      \
+  call;                                                                                  \
+  _Pragma("omp parallel")                                                                \
+  {                                                                                      \
+    LIKWID_MARKER_STOP("PROPKERNEL");                                                    \
+  }
+#else /* LIKWID_PERFMON */
+#define PROFILE(call) call;
+#endif /* LIKWID_PERFMON */
 
 int main(int argc, char *argv[])
 {
@@ -21,7 +37,6 @@ int main(int argc, char *argv[])
   const char *geometryType = "channel";
   int verify               = 0;
   char *kernelToUse        = "push-soa";
-  int nThreads             = 1;
   int periodic[3]          = { 0, 0, 0 };
 
   CaseDataType cd;
@@ -42,15 +57,13 @@ int main(int argc, char *argv[])
 #endif
   );
 
-  parseArguments(
-      argc, argv, dims, &geometryType, &kernelToUse, &nThreads, periodic, &verify, &cd);
+  parseArguments(argc, argv, dims, &geometryType, &kernelToUse, periodic, &verify, &cd);
 
-#ifdef _OPENMP
-  omp_set_num_threads(nThreads);
-  (void)nThreads;
-#else
-  (void)nThreads;
-#endif
+  LIKWID_MARKER_INIT;
+  _Pragma("omp parallel")
+  {
+    LIKWID_MARKER_REGISTER("PROPKERNEL");
+  }
 
   // Create geometry
   LatticeDescType ld;
@@ -106,7 +119,7 @@ int main(int argc, char *argv[])
   printf("# starting kernel...\n");
 
   // Run kernel
-  kd->Kernel(&ld, kd, &cd);
+  PROFILE(kd->Kernel(&ld, kd, &cd))
 
   // Statistics
   kernelStatistics(kd, &ld, &cd, cd.MaxIterations);
@@ -158,6 +171,7 @@ int main(int argc, char *argv[])
   }
 #endif
 
+  LIKWID_MARKER_CLOSE;
   free(ld.Lattice);
   return exitCode;
 }

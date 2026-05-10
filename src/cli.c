@@ -46,7 +46,6 @@ void parseArguments(int argc,
     int dims[3],
     const char **geometryType,
     char **kernelToUse,
-    int *nThreads,
     int periodic[3],
     int *verify,
     CaseDataType *cd)
@@ -100,18 +99,6 @@ void parseArguments(int argc,
       printf("#\n# VERIFICATION: verifying flow profile of channel flow.\n#\n");
 #else
       printf("ERROR: recompile with VERIFICATION=on to use -V.\n");
-      exit(EXIT_FAILURE);
-#endif
-      break;
-    case 't':
-#ifdef _OPENMP
-      *nThreads = atoi(optarg);
-      if (*nThreads <= 0) {
-        printf("ERROR: threads must be > 0.\n");
-        exit(EXIT_FAILURE);
-      }
-#else
-      printf("ERROR: threads requires OpenMP.\n");
       exit(EXIT_FAILURE);
 #endif
       break;

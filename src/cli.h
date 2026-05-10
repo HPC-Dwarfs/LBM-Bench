@@ -19,7 +19,6 @@
   "  -k NAME              Kernel to use\n"                                               \
   "  -l                   List available kernels\n"                                      \
   "  -V                   Run verification\n"                                            \
-  "  -t N                 Number of threads\n"                                           \
   "  -x/-y/-z             Enable periodic BC in x/y/z\n"                                 \
   "  -h                   Print this help\n"
 
@@ -28,7 +27,6 @@ void parseArguments(int argc,
     int dims[3],
     const char **geometryType,
     char **kernelToUse,
-    int *nThreads,
     int periodic[3],
     int *verify,
     CaseDataType *cd);
