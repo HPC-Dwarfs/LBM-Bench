@@ -449,7 +449,10 @@ static void kernelInitInternal(
   else
     kd->Pdfs[1] = NULL;
 
-  // Initialize PDFs to zero
+  // Initialize PDFs to zero. NUMA first-touch: parallel iteration shape
+  // must match the SoA compute kernels (collapse(2) on x,y, static
+  // schedule) so each thread first-touches the pages it later accesses.
+#pragma omp parallel for collapse(2) schedule(static)
   for (int x = 0; x < gX; ++x)
     for (int y = 0; y < gY; ++y)
       for (int z = 0; z < gZ; ++z)
@@ -709,12 +712,12 @@ void kernelComputeBoundaryConditions(
 
         dens = rhoIn;
         ux   = F(1.0) -
-             (pdfs[D3Q19_C] +
-                 (pdfs[D3Q19_T] + pdfs[D3Q19_B] + pdfs[D3Q19_S] + pdfs[D3Q19_N]) +
-                 (pdfs[D3Q19_TS] + pdfs[D3Q19_BS] + pdfs[D3Q19_TN] + pdfs[D3Q19_BN]) +
-                 F(2.0) * (pdfs[D3Q19_SW] + pdfs[D3Q19_TW] + pdfs[D3Q19_W] +
-                              pdfs[D3Q19_BW] + pdfs[D3Q19_NW])) *
-                 rhoInInv;
+               (pdfs[D3Q19_C] +
+                   (pdfs[D3Q19_T] + pdfs[D3Q19_B] + pdfs[D3Q19_S] + pdfs[D3Q19_N]) +
+                   (pdfs[D3Q19_TS] + pdfs[D3Q19_BS] + pdfs[D3Q19_TN] + pdfs[D3Q19_BN]) +
+                   F(2.0) * (pdfs[D3Q19_SW] + pdfs[D3Q19_TW] + pdfs[D3Q19_W] +
+                                pdfs[D3Q19_BW] + pdfs[D3Q19_NW])) *
+                   rhoInInv;
 
         indepUx       = oneSixth * dens * ux;
         pdfs[D3Q19_E] = pdfs[D3Q19_W] + oneThird * dens * ux;
@@ -753,12 +756,12 @@ void kernelComputeBoundaryConditions(
 
         dens = rhoOut;
         ux   = F(-1.0) +
-             (pdfs[D3Q19_C] +
-                 (pdfs[D3Q19_T] + pdfs[D3Q19_B] + pdfs[D3Q19_S] + pdfs[D3Q19_N]) +
-                 (pdfs[D3Q19_TS] + pdfs[D3Q19_BS] + pdfs[D3Q19_TN] + pdfs[D3Q19_BN]) +
-                 F(2.0) * (pdfs[D3Q19_NE] + pdfs[D3Q19_BE] + pdfs[D3Q19_E] +
-                              pdfs[D3Q19_TE] + pdfs[D3Q19_SE])) *
-                 rhoOutInv;
+               (pdfs[D3Q19_C] +
+                   (pdfs[D3Q19_T] + pdfs[D3Q19_B] + pdfs[D3Q19_S] + pdfs[D3Q19_N]) +
+                   (pdfs[D3Q19_TS] + pdfs[D3Q19_BS] + pdfs[D3Q19_TN] + pdfs[D3Q19_BN]) +
+                   F(2.0) * (pdfs[D3Q19_NE] + pdfs[D3Q19_BE] + pdfs[D3Q19_E] +
+                                pdfs[D3Q19_TE] + pdfs[D3Q19_SE])) *
+                   rhoOutInv;
 
         indepUx       = oneSixth * dens * ux;
         pdfs[D3Q19_W] = pdfs[D3Q19_E] - oneThird * dens * ux;
