@@ -44,7 +44,7 @@ void kernelPushSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd)
   for (int iter = 0; iter < maxIterations; ++iter) {
 
 #ifdef _OPENMP
-#pragma omp parallel for collapse(2) default(none) shared(gDims,                         \
+#pragma omp parallel for simd default(none) shared(gDims,                         \
         src,                                                                             \
         dst,                                                                             \
         w0,                                                                              \

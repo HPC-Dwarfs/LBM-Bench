@@ -40,19 +40,12 @@ void kernelPullSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd)
 
 #define I(x, y, z, dir) indexSoA(gDims, (x), (y), (z), (dir))
 
-#ifdef _OPENMP
-#pragma omp parallel 
-{
-  printf("Entering Pull SOA sweep %d\n",_OPENMP);
-}
-#endif
- 
   kd->Duration = -getTimeStamp();
 
   for (int iter = 0; iter < maxIterations; ++iter) {
 
 #ifdef _OPENMP
-#pragma omp parallel for collapse(2) default(none) shared(gDims,                         \
+#pragma omp parallel for simd default(none) shared(gDims,                         \
         src,                                                                             \
         dst,                                                                             \
         w0,                                                                              \
