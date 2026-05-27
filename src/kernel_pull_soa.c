@@ -45,7 +45,7 @@ void kernelPullSoA(LatticeDescType *ld, KernelDataType *kd, CaseDataType *cd)
   for (int iter = 0; iter < maxIterations; ++iter) {
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) shared(gDims,                         \
+#pragma omp parallel for default(none) shared(gDims,                         \
         src,                                                                             \
         dst,                                                                             \
         w0,                                                                              \
